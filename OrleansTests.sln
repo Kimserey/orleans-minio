@@ -5,6 +5,14 @@ VisualStudioVersion = 15.0.27703.2018
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTests", "OrleansTests\OrleansTests.csproj", "{477E5975-ED44-4780-943E-CE4B7A972C1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTests.Grains", "OrleansTests.Grains\OrleansTests.Grains.csproj", "{D5899F7B-6437-4475-A6E0-70001F2F5C65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTests.GrainInterfaces", "OrleansTests.GrainInterfaces\OrleansTests.GrainInterfaces.csproj", "{D9E6AAB1-8525-4915-A0BA-047A89830C0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTests.Silo", "OrleansTests.Silo\OrleansTests.Silo.csproj", "{5CD9A950-B642-4532-852E-7FDBF14CC2E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTests.Client", "OrleansTests.Client\OrleansTests.Client.csproj", "{2305B32E-D4C8-49CD-9430-47DA9E72A516}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +23,22 @@ Global
 		{477E5975-ED44-4780-943E-CE4B7A972C1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{477E5975-ED44-4780-943E-CE4B7A972C1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{477E5975-ED44-4780-943E-CE4B7A972C1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5899F7B-6437-4475-A6E0-70001F2F5C65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5899F7B-6437-4475-A6E0-70001F2F5C65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5899F7B-6437-4475-A6E0-70001F2F5C65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5899F7B-6437-4475-A6E0-70001F2F5C65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9E6AAB1-8525-4915-A0BA-047A89830C0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9E6AAB1-8525-4915-A0BA-047A89830C0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9E6AAB1-8525-4915-A0BA-047A89830C0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9E6AAB1-8525-4915-A0BA-047A89830C0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CD9A950-B642-4532-852E-7FDBF14CC2E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CD9A950-B642-4532-852E-7FDBF14CC2E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CD9A950-B642-4532-852E-7FDBF14CC2E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CD9A950-B642-4532-852E-7FDBF14CC2E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2305B32E-D4C8-49CD-9430-47DA9E72A516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2305B32E-D4C8-49CD-9430-47DA9E72A516}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2305B32E-D4C8-49CD-9430-47DA9E72A516}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2305B32E-D4C8-49CD-9430-47DA9E72A516}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
