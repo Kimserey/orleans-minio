@@ -1,9 +1,11 @@
 ﻿using Orleans;
+using Orleans.Providers;
 using OrleansTests.GrainInterfaces;
 using System.Threading.Tasks;
 
 namespace OrleansTests.Grains
 {
+    [StorageProvider(ProviderName = "default")]
     public class BankAccount : Grain<BankAccountState>, IBankAccount
     {
         public Task<double> GetBalance()
