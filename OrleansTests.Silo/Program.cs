@@ -22,6 +22,8 @@ namespace OrleansTests.Silo
                 .ConfigureLogging(x => x.AddConsole().AddDebug())
                 .Build();
 
+            silo.StartAsync().Wait();
+
             Console.WriteLine("===> Silo running");
             Console.ReadKey();
         }

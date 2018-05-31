@@ -30,7 +30,7 @@ namespace OrleansTests.Client
                 .Connect()
                 .Wait();
 
-            services.AddSingleton<IGrainFactory>();
+            services.AddSingleton<IGrainFactory>(client);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
