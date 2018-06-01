@@ -17,7 +17,7 @@ namespace OrleansTests
     {
         public static ISiloHostBuilder AddMinioGrainStorage(this ISiloHostBuilder builder, string providerName, Action<MinioGrainStorageOptions> options)
         {
-            return builder.ConfigureServices(services => services.AddMinioGrainStorage(providerName, ob => ob.Configure(options)));   
+            return builder.ConfigureServices(services => services.AddMinioGrainStorage(providerName, ob => ob.Configure(options)));
         }
 
         public static IServiceCollection AddMinioGrainStorage(this IServiceCollection services, string providerName, Action<OptionsBuilder<MinioGrainStorageOptions>> options)
@@ -47,9 +47,24 @@ namespace OrleansTests
             throw new NotImplementedException();
         }
 
-        public Task ReadStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
+        public async Task ReadStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
         {
-            throw new NotImplementedException();
+            string blobName = GetBlobNameString(grainType, grainReference);
+
+            try
+            {
+                if (_logger.IsEnabled(LogLevel.Trace)) _logger.LogTrace("Reading: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}", grainType, grainReference, grainState.ETag, blobName, _container);
+
+                // TODO FIX when not exists
+                var data = await _storage.ReadBlob(_container, "orleans", blobName);
+                grainState.State = await ConvertToGrainState(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}", grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
+
+                throw ex;
+            }
         }
 
         public async Task WriteStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
@@ -60,8 +75,8 @@ namespace OrleansTests
             {
                 if (_logger.IsEnabled(LogLevel.Trace)) _logger.LogTrace("Writing: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}", grainType, grainReference, grainState.ETag, blobName, _container);
 
-                var (data, mimeType) = ConvertToStorageFormat(grainState.State);
-                await _storage.UploadBlob(_container, "orleans", blobName, new MemoryStream(data), mimeType);
+                var (data, mimeType) = await ConvertToStorageFormat(grainState.State);
+                await _storage.UploadBlob(_container, "orleans", blobName, data, mimeType);
             }
             catch (Exception ex)
             {
@@ -76,11 +91,30 @@ namespace OrleansTests
             return $"{grainType}-{grainReference.ToKeyString()}";
         }
 
-        private (byte[], string) ConvertToStorageFormat(object grainState)
+        private async Task<(Stream, string)> ConvertToStorageFormat(object grainState)
         {
-            byte[] data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(grainState));
-            string mimeType = "application/json";
-            return (data, mimeType);
+            using (var stream = new MemoryStream())
+            {
+                using (var writer = new StreamWriter(stream))
+                {
+                    string data = JsonConvert.SerializeObject(grainState);
+                    await writer.WriteLineAsync(data);
+                    writer.Flush();
+                    stream.Position = 0;
+                }
+                string mimeType = "application/json";
+                return (stream, mimeType);
+            }
+        }
+
+        private async Task<object> ConvertToGrainState(Stream data)
+        {
+            using (var reader = new StreamReader(data))
+            {
+                var json = await reader.ReadToEndAsync();
+                var state = JsonConvert.DeserializeObject(json);
+                return state;
+            }
         }
     }
 
