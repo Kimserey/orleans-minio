@@ -1,11 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UserSecretsId>1c163ef7-b6b6-4dff-9ad7-9693da21b1ff</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\..\..\Users\Kim Serey\AppData\Roaming\Microsoft\UserSecrets\1c163ef7-b6b6-4dff-9ad7-9693da21b1ff\secrets.json" Link="secrets.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0" />

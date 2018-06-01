@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace OrleansTests.Grains
 {
     [StatelessWorker]
-    [StorageProvider(ProviderName = "InMemoryCustom")]
+    [StorageProvider(ProviderName = "Minio")]
     public class BankAccount : Grain<BankAccountState>, IBankAccount
     {
         public Task<double> GetBalance()

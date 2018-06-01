@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Hosting;
 using OrleansTests.Grains;
@@ -10,13 +11,16 @@ namespace OrleansTests.Silo
     {
         static void Main(string[] args)
         {
+            var config = new ConfigurationBuilder()
+                .AddUserSecrets<Program>()
+                .Build();
+
             var silo = new SiloHostBuilder()
                 .UseLocalhostClustering()
-                //.AddMemoryGrainStorage("default")
                 .AddMinioGrainStorage("Minio", opts =>
                 {
-                    opts.AccessKey = "";
-                    opts.SecretKey = "";
+                    opts.AccessKey = config["MINIO_ACCESS_KEY"];
+                    opts.SecretKey = config["MINIO_SECRET_KEY"];
                     opts.Endpoint = "http://localhost:9000";
                     opts.Container = "ek-grain-state";
                 })
