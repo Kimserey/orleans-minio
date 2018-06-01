@@ -10,12 +10,14 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="2.1.0" />
     <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.0.0" />
     <PackageReference Include="Microsoft.Orleans.OrleansRuntime" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OrleansTests.Grains\OrleansTests.Grains.csproj" />
+    <ProjectReference Include="..\OrleansTests\OrleansTests.csproj" />
   </ItemGroup>
 
 </Project>

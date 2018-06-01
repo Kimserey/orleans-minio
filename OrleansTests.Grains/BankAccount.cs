@@ -1,11 +1,13 @@
 ﻿using Orleans;
+using Orleans.Concurrency;
 using Orleans.Providers;
 using OrleansTests.GrainInterfaces;
 using System.Threading.Tasks;
 
 namespace OrleansTests.Grains
 {
-    [StorageProvider(ProviderName = "default")]
+    [StatelessWorker]
+    [StorageProvider(ProviderName = "InMemoryCustom")]
     public class BankAccount : Grain<BankAccountState>, IBankAccount
     {
         public Task<double> GetBalance()
@@ -13,10 +15,11 @@ namespace OrleansTests.Grains
             return Task.FromResult(State.Amount);
         }
 
-        public async Task SetBalance(double amount)
+        public async Task<double> SetBalance(double amount)
         {
             State.Amount = amount;
             await WriteStateAsync();
+            return State.Amount;
         }
     }
 

@@ -19,15 +19,15 @@ namespace OrleansTests.Client
         [HttpGet("balance")]
         public async Task<IActionResult> GetBalance()
         {
-            var balance = await _factory.GetGrain<IBankAccount>(Guid.NewGuid()).GetBalance();
+            var balance = await _factory.GetGrain<IBankAccount>(0).GetBalance();
             return Json(balance);
         }
 
         [HttpPost("balance")]
-        public async Task<IActionResult> SetBalance([FromQuery] double balance)
+        public async Task<IActionResult> SetBalance([FromQuery] double b)
         {
-            await _factory.GetGrain<IBankAccount>(Guid.NewGuid()).SetBalance(balance);
-            return Ok();
+            var balance = await _factory.GetGrain<IBankAccount>(0).SetBalance(b);
+            return Json(balance);
         }
     }
 }

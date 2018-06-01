@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace OrleansTests.GrainInterfaces
 {
-    public interface IBankAccount: IGrainWithGuidKey
+    public interface IBankAccount: IGrainWithIntegerKey
     {
-        Task SetBalance(double amount);
+        Task<double> SetBalance(double amount);
 
         Task<double> GetBalance();
     }
