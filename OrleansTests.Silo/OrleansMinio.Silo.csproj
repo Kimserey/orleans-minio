@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OrleansTests.Grains\OrleansTests.Grains.csproj" />
-    <ProjectReference Include="..\OrleansTests\OrleansTests.csproj" />
+    <ProjectReference Include="..\OrleansTests.Grains\OrleansMinio.Grains.csproj" />
+    <ProjectReference Include="..\OrleansTests\OrleansMinio.csproj" />
   </ItemGroup>
 
   <ItemGroup>

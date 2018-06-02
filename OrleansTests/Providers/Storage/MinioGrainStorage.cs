@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OrleansTests.Storage
+namespace OrleansMinio.Storage
 {
     public class MinioGrainStorage : IGrainStorage, ILifecycleParticipant<ISiloLifecycle>
     {

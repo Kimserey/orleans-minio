@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace OrleansTests.Client
+namespace OrleansMinio.Client
 {
     public class TestOptionsController : Controller
     {

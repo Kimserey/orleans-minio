@@ -1,10 +1,10 @@
 ﻿using Orleans;
 using Orleans.Concurrency;
 using Orleans.Providers;
-using OrleansTests.GrainInterfaces;
+using OrleansMinio.GrainInterfaces;
 using System.Threading.Tasks;
 
-namespace OrleansTests.Grains
+namespace OrleansMinio.Grains
 {
     [StatelessWorker]
     [StorageProvider(ProviderName = "Minio")]

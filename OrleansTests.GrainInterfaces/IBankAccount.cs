@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace OrleansTests.GrainInterfaces
+namespace OrleansMinio.GrainInterfaces
 {
     public interface IBankAccount: IGrainWithIntegerKey
     {

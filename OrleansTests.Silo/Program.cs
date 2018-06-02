@@ -2,12 +2,12 @@
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Hosting;
-using OrleansTests.Hosting;
-using OrleansTests.Grains;
-using OrleansTests.Storage;
+using OrleansMinio.Hosting;
+using OrleansMinio.Grains;
+using OrleansMinio.Storage;
 using System;
 
-namespace OrleansTests.Silo
+namespace OrleansMinio.Silo
 {
     class Program
     {

@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using OrleansTests.GrainInterfaces;
+using OrleansMinio.GrainInterfaces;
 
-namespace OrleansTests.Client
+namespace OrleansMinio.Client
 {
     public class Startup
     {

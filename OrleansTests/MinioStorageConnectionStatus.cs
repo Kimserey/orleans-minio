@@ -1,4 +1,4 @@
-﻿namespace OrleansTests
+﻿namespace OrleansMinio
 {
     public class MinioStorageConnectionStatus
     {

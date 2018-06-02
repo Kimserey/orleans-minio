@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace OrleansTests.Storage
+namespace OrleansMinio.Storage
 {
     public class MinioStorage : IMinioStorage
     {

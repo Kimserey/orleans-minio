@@ -1,4 +1,4 @@
-﻿namespace OrleansTests.Client
+﻿namespace OrleansMinio.Client
 {
     public class TestOptions
     {

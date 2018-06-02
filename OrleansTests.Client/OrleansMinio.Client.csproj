@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OrleansTests.GrainInterfaces\OrleansTests.GrainInterfaces.csproj" />
+    <ProjectReference Include="..\OrleansTests.GrainInterfaces\OrleansMinio.GrainInterfaces.csproj" />
   </ItemGroup>
   
 </Project>

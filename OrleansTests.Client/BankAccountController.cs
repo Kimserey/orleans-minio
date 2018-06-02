@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Orleans;
-using OrleansTests.GrainInterfaces;
+using OrleansMinio.GrainInterfaces;
 using System;
 using System.Threading.Tasks;
 
-namespace OrleansTests.Client
+namespace OrleansMinio.Client
 {
     [Route("account")]
     public class BankAccountController : Controller
