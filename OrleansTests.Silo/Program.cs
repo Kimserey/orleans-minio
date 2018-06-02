@@ -13,6 +13,7 @@ namespace OrleansTests.Silo
         {
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<Program>()
+                .AddJsonFile("appsettings.json")
                 .Build();
 
             var silo = new SiloHostBuilder()
@@ -29,7 +30,11 @@ namespace OrleansTests.Silo
                     x.AddFrameworkPart(typeof(MinioGrainStorage).Assembly);
                     x.AddApplicationPart(typeof(BankAccount).Assembly).WithReferences();
                 })
-                .ConfigureLogging(x => x.AddConsole().AddDebug())
+                .ConfigureLogging(x => x
+                    .AddConfiguration(config.GetSection("Logging"))
+                    .AddConsole()
+                    .AddDebug()
+                )
                 .Build();
 
             silo.StartAsync().Wait();

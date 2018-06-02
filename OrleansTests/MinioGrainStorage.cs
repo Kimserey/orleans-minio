@@ -36,9 +36,28 @@ namespace OrleansTests
             _typeResolver = typeResolver;
         }
 
-        public Task ClearStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
+        public async Task ClearStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
         {
-            throw new NotImplementedException();
+            string blobName = GetBlobNameString(grainType, grainReference);
+
+            try
+            {
+                _logger.LogTrace("Clearing: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}",
+                    grainType, grainReference, grainState.ETag, blobName, _container);
+
+                await _storage.DeleteBlob(_container, blobName);
+                grainState.ETag = null;
+
+                _logger.LogTrace("Cleared: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}",
+                    grainType, grainReference, grainState.ETag, blobName, _container);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error clearing: GrainType={0} Grainid={1} ETag={2} BlobName={3} in Container={4} Exception={5}", 
+                    grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
+
+                throw;
+            }
         }
 
         public async Task ReadStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
@@ -80,14 +99,13 @@ namespace OrleansTests
 
                 _logger.LogTrace("Read: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}",
                     grainType, grainReference, grainState.ETag, blobName, _container);
-
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error reading: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}",
                     grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
 
-                throw ex;
+                throw;
             }
         }
 
@@ -112,17 +130,20 @@ namespace OrleansTests
 
                 using (var stream = new MemoryStream(ConvertToStorageFormat(record)))
                 {
-                    await _storage.UploadBlob(_container, "orleans", blobName, stream, "application/json");
+                    await _storage.UploadBlob(_container, blobName, stream, "application/json");
                 }
 
                 grainState.ETag = newETag.ToString();
+
+                _logger.LogTrace("Wrote: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}",
+                    grainType, grainReference, grainState.ETag, blobName, _container);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error writing: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}", 
                     grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
 
-                throw ex;
+                throw;
             }
         }
 

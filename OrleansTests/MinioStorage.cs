@@ -12,7 +12,7 @@ namespace OrleansTests
         private readonly string _endpoint;
         private readonly string _containerPrefix;
 
-        public MinioStorage(string accessKey, string secretKey, string endpoint, string containerPrefix) 
+        public MinioStorage(string accessKey, string secretKey, string endpoint, string containerPrefix)
             : this(accessKey, secretKey, endpoint)
         {
             if (string.IsNullOrWhiteSpace(containerPrefix))
@@ -39,7 +39,7 @@ namespace OrleansTests
 
         private MinioClient CreateMinioClient() => new MinioClient(_endpoint, _accessKey, _secretKey);
 
-        private string AppendPrefix(string prefix, string value) => $"{prefix}-{value}";
+        private string AppendPrefix(string prefix, string value) => string.IsNullOrEmpty(prefix) ? value : $"{prefix}-{value}";
 
         private string AppendContainerPrefix(string container) => string.IsNullOrEmpty(_containerPrefix) ? container : AppendPrefix(_containerPrefix, container);
 
@@ -50,23 +50,23 @@ namespace OrleansTests
             return CreateMinioClient().BucketExistsAsync(AppendContainerPrefix(blobContainer));
         }
 
-        public async Task DeleteBlob(string blobContainer, string prefix, string blobName)
+        public async Task DeleteBlob(string blobContainer, string blobPrefix, string blobName)
         {
             var (client, bucket, objectName) =
-                GetStorage(blobContainer, prefix, blobName);
+                GetStorage(blobContainer, blobPrefix, blobName);
 
             await client.RemoveObjectAsync(bucket, objectName);
         }
 
-        public Task DeleteBlob(string blobContainer, string prefix, Guid blobKey)
+        public Task DeleteBlob(string blobContainer, Guid blobKey, string blobPrefix = null)
         {
-            return DeleteBlob(blobContainer, prefix, blobKey.ToString());
+            return DeleteBlob(blobContainer, blobKey.ToString(), blobPrefix);
         }
 
-        public async Task<Stream> ReadBlob(string blobContainer, string prefix, string blobName)
+        public async Task<Stream> ReadBlob(string blobContainer, string blobPrefix, string blobName)
         {
             var (client, bucket, objectName) =
-                GetStorage(blobContainer, prefix, blobName);
+                GetStorage(blobContainer, blobPrefix, blobName);
 
             var ms = new MemoryStream();
             await client.GetObjectAsync(bucket, objectName, stream =>
@@ -77,15 +77,15 @@ namespace OrleansTests
             return ms;
         }
 
-        public Task<Stream> ReadBlob(string blobContainer, string prefix, Guid blobKey)
+        public Task<Stream> ReadBlob(string blobContainer, Guid blobKey, string blobPrefix = null)
         {
-            return ReadBlob(blobContainer, prefix, blobKey.ToString());
+            return ReadBlob(blobContainer, blobPrefix, blobKey.ToString());
         }
 
-        public async Task UploadBlob(string blobContainer, string prefix, string blobName, Stream blob, string contentType = null)
+        public async Task UploadBlob(string blobContainer, string blobName, Stream blob, string blobPrefix = null, string contentType = null)
         {
             var (client, container, name) =
-                GetStorage(blobContainer, prefix, blobName);
+                GetStorage(blobContainer, blobPrefix, blobName);
 
             if (!await client.BucketExistsAsync(container))
             {
@@ -95,9 +95,9 @@ namespace OrleansTests
             await client.PutObjectAsync(container, name, blob, blob.Length, contentType: contentType);
         }
 
-        public Task UploadBlob(string blobContainer, string prefix, Guid blobKey, Stream blob, string contentType = null)
+        public Task UploadBlob(string blobContainer, Guid blobKey, Stream blob, string blobPrefix = null, string contentType = null)
         {
-            return UploadBlob(blobContainer, prefix, blobKey.ToString(), blob, contentType);
+            return UploadBlob(blobContainer, blobKey.ToString(), blob, blobPrefix, contentType);
         }
 
         public async Task<BlobStorageConnectionStatus> CheckConnection()
