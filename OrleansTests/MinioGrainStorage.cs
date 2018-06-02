@@ -34,12 +34,6 @@ namespace OrleansTests
 
     public class MinioGrainStorage : IGrainStorage, ILifecycleParticipant<ISiloLifecycle>
     {
-        private const string GRAIN_REFERENCE_PROPERTY_NAME = "GrainReference";
-        private const string STRING_STATE_PROPERTY_NAME = "StringState";
-        private const string BINARY_STATE_PROPERTY_NAME = "BinaryState";
-        private const string GRAIN_TYPE_PROPERTY_NAME = "GrainType";
-        private const string ETAG_PROPERTY_NAME = "ETag";
-
         private readonly string _name;
         private readonly string _container;
         private readonly ILogger<MinioGrainStorage> _logger;
@@ -106,15 +100,17 @@ namespace OrleansTests
         {
             string blobName = GetBlobNameString(grainType, grainReference);
 
+            int newETag = string.IsNullOrEmpty(grainState.ETag) ? 0 : Int32.Parse(grainState.ETag) + 1;
             try
             {
                 if (_logger.IsEnabled(LogLevel.Trace))
                     _logger.LogTrace("Writing: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}", 
                         grainType, grainReference, grainState.ETag, blobName, _container);
 
+
                 var record = new GrainStateRecord
                 {
-                    GrainReference = blobName,
+                    ETag = newETag,
                     GrainType = grainType,
                     State = grainState.State
                 };
@@ -123,6 +119,8 @@ namespace OrleansTests
                 {
                     await _storage.UploadBlob(_container, "orleans", blobName, stream, "application/json");
                 }
+
+                grainState.ETag = newETag.ToString();
             }
             catch (Exception ex)
             {
@@ -170,10 +168,9 @@ namespace OrleansTests
 
         internal class GrainStateRecord
         {
-            public string GrainReference { get; set; } = "";
-            public string GrainType { get; set; } = "";
-            public object State { get; set; }
+            public string GrainType { get; set; }
             public int ETag { get; set; }
+            public object State { get; set; }
         }
     }
 
