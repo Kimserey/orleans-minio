@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Minio;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ namespace OrleansMinio.Storage
         private readonly string _endpoint;
         private readonly string _containerPrefix;
         private readonly ILogger<MinioStorage> _logger;
+        private readonly Stopwatch stopwwatch = new Stopwatch();
 
         public MinioStorage(ILogger<MinioStorage> logger, string accessKey, string secretKey, string endpoint)
         {
@@ -46,7 +48,17 @@ namespace OrleansMinio.Storage
 
         private string AppendContainerPrefix(string container) => string.IsNullOrEmpty(_containerPrefix) ? container : AppendPrefix(_containerPrefix, container);
 
-        private (MinioClient client, string bucket, string objectName) GetStorage(string blobContainer, string prefix, string blobName) => (CreateMinioClient(), AppendContainerPrefix(blobContainer), AppendPrefix(prefix, blobName));
+        private (MinioClient client, string bucket, string objectName) GetStorage(string blobContainer, string blobPrefix, string blobName)
+        {
+            _logger.LogDebug("Creating Minio client: container={0} blobName={1} blobPrefix={2}", blobContainer, blobName, blobPrefix);
+            stopwwatch.Restart();
+
+            var client = CreateMinioClient();
+
+            _logger.LogDebug("Created Minio client: timems={0} container={0} blobName={1} blobPrefix={2}", stopwwatch.ElapsedMilliseconds, blobContainer, blobName, blobPrefix);
+
+            return (client, AppendContainerPrefix(blobContainer), AppendPrefix(blobPrefix, blobName));
+        }
 
         public Task<bool> ContainerExits(string blobContainer)
         {
@@ -58,12 +70,13 @@ namespace OrleansMinio.Storage
             var (client, bucket, objectName) =
                 GetStorage(blobContainer, blobPrefix, blobName);
 
-            await client.RemoveObjectAsync(bucket, objectName);
-        }
+            _logger.LogDebug("Deleting blob: container={0} blobName={1} blobPrefix={2}", blobContainer, blobName, blobPrefix);
+            stopwwatch.Restart();
 
-        public Task DeleteBlob(string blobContainer, Guid blobKey, string blobPrefix = null)
-        {
-            return DeleteBlob(blobContainer, blobKey.ToString(), blobPrefix);
+            await client.RemoveObjectAsync(bucket, objectName);
+
+            stopwwatch.Stop();
+            _logger.LogDebug("Deleted blob: timems={0} container={0} blobName={1} blobPrefix={2}", stopwwatch.ElapsedMilliseconds, blobContainer, blobName, blobPrefix);
         }
 
         public async Task<Stream> ReadBlob(string blobContainer, string blobName, string blobPrefix = null)
@@ -71,18 +84,20 @@ namespace OrleansMinio.Storage
             var (client, bucket, objectName) =
                 GetStorage(blobContainer, blobPrefix, blobName);
 
+            _logger.LogDebug("Reading blob: container={0} blobName={1} blobPrefix={2}", blobContainer, blobName, blobPrefix);
+            stopwwatch.Restart();
+
             var ms = new MemoryStream();
             await client.GetObjectAsync(bucket, objectName, stream =>
             {
                 stream.CopyTo(ms);
             });
+
+            stopwwatch.Stop();
+            _logger.LogDebug("Read blob: timems={0} container={0} blobName={1} blobPrefix={2}", stopwwatch.ElapsedMilliseconds, blobContainer, blobName, blobPrefix);
+
             ms.Position = 0;
             return ms;
-        }
-
-        public Task<Stream> ReadBlob(string blobContainer, Guid blobKey, string blobPrefix = null)
-        {
-            return ReadBlob(blobContainer, blobKey.ToString(), blobPrefix);
         }
 
         public async Task UploadBlob(string blobContainer, string blobName, Stream blob, string blobPrefix = null, string contentType = null)
@@ -90,17 +105,18 @@ namespace OrleansMinio.Storage
             var (client, container, name) =
                 GetStorage(blobContainer, blobPrefix, blobName);
 
+            _logger.LogDebug("Writing blob: container={0} blobName={1} blobPrefix={2}", blobContainer, blobName, blobPrefix);
+            stopwwatch.Restart();
+
             if (!await client.BucketExistsAsync(container))
             {
                 await client.MakeBucketAsync(container);
             }
 
             await client.PutObjectAsync(container, name, blob, blob.Length, contentType: contentType);
-        }
 
-        public Task UploadBlob(string blobContainer, Guid blobKey, Stream blob, string blobPrefix = null, string contentType = null)
-        {
-            return UploadBlob(blobContainer, blobKey.ToString(), blob, blobPrefix, contentType);
+            stopwwatch.Stop();
+            _logger.LogDebug("Wrote blob: timems={0} container={0} blobName={1} blobPrefix={2}", stopwwatch.ElapsedMilliseconds, blobContainer, blobName, blobPrefix);
         }
 
         public async Task<MinioStorageConnectionStatus> CheckConnection()
