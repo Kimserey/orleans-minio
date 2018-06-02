@@ -72,11 +72,11 @@ namespace OrleansTests
                 GrainStateRecord record;
                 try
                 {
-                    using (var blob = await _storage.ReadBlob(_container, "orleans", blobName))
+                    using (var blob = await _storage.ReadBlob(_container, blobName))
                     using (var stream = new MemoryStream())
                     {
                         await blob.CopyToAsync(stream);
-                        record  = ConvertFromStorageFormat(grainState.State.GetType(), stream.ToArray());
+                        record  = ConvertFromStorageFormat(stream.ToArray());
                     }
                 }
                 catch (BucketNotFoundException ex)
@@ -124,13 +124,12 @@ namespace OrleansTests
                 var record = new GrainStateRecord
                 {
                     ETag = newETag,
-                    GrainType = grainType,
                     State = grainState.State
                 };
 
                 using (var stream = new MemoryStream(ConvertToStorageFormat(record)))
                 {
-                    await _storage.UploadBlob(_container, blobName, stream, "application/json");
+                    await _storage.UploadBlob(_container, blobName, stream, contentType: "application/json");
                 }
 
                 grainState.ETag = newETag.ToString();
@@ -158,11 +157,10 @@ namespace OrleansTests
             return Encoding.UTF8.GetBytes(data);
         }
 
-        private GrainStateRecord ConvertFromStorageFormat(Type stateType, byte[] content)
+        private GrainStateRecord ConvertFromStorageFormat(byte[] content)
         {
             var json = Encoding.UTF8.GetString(content);
             var record = JsonConvert.DeserializeObject<GrainStateRecord>(json, _jsonSettings);
-            record.State = ((JObject)record.State).ToObject(stateType);
             return record;
         }
 
@@ -179,7 +177,6 @@ namespace OrleansTests
 
         internal class GrainStateRecord
         {
-            public string GrainType { get; set; }
             public int ETag { get; set; }
             public object State { get; set; }
         }

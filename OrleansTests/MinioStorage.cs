@@ -50,7 +50,7 @@ namespace OrleansTests
             return CreateMinioClient().BucketExistsAsync(AppendContainerPrefix(blobContainer));
         }
 
-        public async Task DeleteBlob(string blobContainer, string blobPrefix, string blobName)
+        public async Task DeleteBlob(string blobContainer, string blobName, string blobPrefix = null)
         {
             var (client, bucket, objectName) =
                 GetStorage(blobContainer, blobPrefix, blobName);
@@ -63,7 +63,7 @@ namespace OrleansTests
             return DeleteBlob(blobContainer, blobKey.ToString(), blobPrefix);
         }
 
-        public async Task<Stream> ReadBlob(string blobContainer, string blobPrefix, string blobName)
+        public async Task<Stream> ReadBlob(string blobContainer, string blobName, string blobPrefix = null)
         {
             var (client, bucket, objectName) =
                 GetStorage(blobContainer, blobPrefix, blobName);
@@ -79,7 +79,7 @@ namespace OrleansTests
 
         public Task<Stream> ReadBlob(string blobContainer, Guid blobKey, string blobPrefix = null)
         {
-            return ReadBlob(blobContainer, blobPrefix, blobKey.ToString());
+            return ReadBlob(blobContainer, blobKey.ToString(), blobPrefix);
         }
 
         public async Task UploadBlob(string blobContainer, string blobName, Stream blob, string blobPrefix = null, string contentType = null)
