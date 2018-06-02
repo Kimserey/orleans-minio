@@ -6,6 +6,7 @@ namespace OrleansTests
 {
     public interface IBlobStorage
     {
+        Task<bool> ContainerExits(string blobContainer);
         Task<Stream> ReadBlob(string blobContainer, string prefix, string blobName);
         Task<Stream> ReadBlob(string blobContainer, string prefix, Guid blobKey);
         Task UploadBlob(string blobContainer, string prefix, string blobName, Stream blob, string contentType = null);

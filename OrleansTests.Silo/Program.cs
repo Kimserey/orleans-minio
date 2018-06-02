@@ -21,7 +21,7 @@ namespace OrleansTests.Silo
                 {
                     opts.AccessKey = config["MINIO_ACCESS_KEY"];
                     opts.SecretKey = config["MINIO_SECRET_KEY"];
-                    opts.Endpoint = "http://localhost:9000";
+                    opts.Endpoint = "localhost:9000";
                     opts.Container = "ek-grain-state";
                 })
                 .ConfigureApplicationParts(x =>

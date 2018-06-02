@@ -1,14 +1,19 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Minio.Exceptions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Orleans;
 using Orleans.Hosting;
 using Orleans.Runtime;
+using Orleans.Serialization;
 using Orleans.Storage;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OrleansTests
@@ -27,19 +32,30 @@ namespace OrleansTests
         }
     }
 
-    public class MinioGrainStorage : IGrainStorage
+    public class MinioGrainStorage : IGrainStorage, ILifecycleParticipant<ISiloLifecycle>
     {
+        private const string GRAIN_REFERENCE_PROPERTY_NAME = "GrainReference";
+        private const string STRING_STATE_PROPERTY_NAME = "StringState";
+        private const string BINARY_STATE_PROPERTY_NAME = "BinaryState";
+        private const string GRAIN_TYPE_PROPERTY_NAME = "GrainType";
+        private const string ETAG_PROPERTY_NAME = "ETag";
+
         private readonly string _name;
         private readonly string _container;
         private readonly ILogger<MinioGrainStorage> _logger;
         private readonly IBlobStorage _storage;
+        private readonly IGrainFactory _grainFactory;
+        private readonly ITypeResolver _typeResolver;
+        private JsonSerializerSettings _jsonSettings;
 
-        public MinioGrainStorage(string name, string container, ILogger<MinioGrainStorage> logger, IBlobStorage storage)
+        public MinioGrainStorage(string name, string container, IBlobStorage storage, ILogger<MinioGrainStorage> logger, IGrainFactory grainFactory, ITypeResolver typeResolver)
         {
             _name = name;
             _container = container;
             _logger = logger;
             _storage = storage;
+            _grainFactory = grainFactory;
+            _typeResolver = typeResolver;
         }
 
         public Task ClearStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
@@ -53,15 +69,34 @@ namespace OrleansTests
 
             try
             {
-                if (_logger.IsEnabled(LogLevel.Trace)) _logger.LogTrace("Reading: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}", grainType, grainReference, grainState.ETag, blobName, _container);
+                if (_logger.IsEnabled(LogLevel.Trace))
+                    _logger.LogTrace("Reading: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}",
+                        grainType, grainReference, grainState.ETag, blobName, _container);
 
-                // TODO FIX when not exists
-                var data = await _storage.ReadBlob(_container, "orleans", blobName);
-                grainState.State = await ConvertToGrainState(data);
+                try
+                {
+                    using (var blob = await _storage.ReadBlob(_container, "orleans", blobName))
+                    using (var stream = new MemoryStream())
+                    {
+                        await blob.CopyToAsync(stream);
+                        var grainRecord = ConvertFromStorageFormat(stream.ToArray());
+                        grainState.State = grainRecord.State;
+                        grainState.ETag = grainRecord.ETag.ToString();
+                    }
+                }
+                catch (BucketNotFoundException ex)
+                {
+                    return;
+                }
+                catch (ObjectNotFoundException ex)
+                {
+                    return;
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}", grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
+                _logger.LogError(ex, "Error reading: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}",
+                    grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
 
                 throw ex;
             }
@@ -73,14 +108,26 @@ namespace OrleansTests
 
             try
             {
-                if (_logger.IsEnabled(LogLevel.Trace)) _logger.LogTrace("Writing: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}", grainType, grainReference, grainState.ETag, blobName, _container);
+                if (_logger.IsEnabled(LogLevel.Trace))
+                    _logger.LogTrace("Writing: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}", 
+                        grainType, grainReference, grainState.ETag, blobName, _container);
 
-                var (data, mimeType) = await ConvertToStorageFormat(grainState.State);
-                await _storage.UploadBlob(_container, "orleans", blobName, data, mimeType);
+                var record = new GrainStateRecord
+                {
+                    GrainReference = blobName,
+                    GrainType = grainType,
+                    State = grainState.State
+                };
+
+                using (var stream = new MemoryStream(ConvertToStorageFormat(record)))
+                {
+                    await _storage.UploadBlob(_container, "orleans", blobName, stream, "application/json");
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error writing: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}", grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
+                _logger.LogError(ex, "Error writing: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}", 
+                    grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
 
                 throw ex;
             }
@@ -91,30 +138,42 @@ namespace OrleansTests
             return $"{grainType}-{grainReference.ToKeyString()}";
         }
 
-        private async Task<(Stream, string)> ConvertToStorageFormat(object grainState)
+        private byte[] ConvertToStorageFormat(object record)
         {
-            using (var stream = new MemoryStream())
-            {
-                using (var writer = new StreamWriter(stream))
-                {
-                    string data = JsonConvert.SerializeObject(grainState);
-                    await writer.WriteLineAsync(data);
-                    writer.Flush();
-                    stream.Position = 0;
-                }
-                string mimeType = "application/json";
-                return (stream, mimeType);
-            }
+            var data = JsonConvert.SerializeObject(record, _jsonSettings);
+            return Encoding.UTF8.GetBytes(data);
         }
 
-        private async Task<object> ConvertToGrainState(Stream data)
+        private GrainStateRecord ConvertFromStorageFormat(byte[] content)
         {
-            using (var reader = new StreamReader(data))
-            {
-                var json = await reader.ReadToEndAsync();
-                var state = JsonConvert.DeserializeObject(json);
-                return state;
-            }
+            var json = Encoding.UTF8.GetString(content);
+            var state = JsonConvert.DeserializeObject<GrainStateRecord>(json, _jsonSettings);
+            return state;
+        }
+
+        private Task Init(CancellationToken ct)
+        {
+            _jsonSettings = OrleansJsonSerializer.UpdateSerializerSettings(
+                OrleansJsonSerializer.GetDefaultSerializerSettings(_typeResolver, _grainFactory),
+                true,
+                false,
+                null
+            );
+
+            return Task.CompletedTask;
+        }
+
+        public void Participate(ISiloLifecycle lifecycle)
+        {
+            lifecycle.Subscribe(OptionFormattingUtilities.Name<MinioGrainStorage>(_name), ServiceLifecycleStage.ApplicationServices, Init);
+        }
+
+        internal class GrainStateRecord
+        {
+            public string GrainReference { get; set; } = "";
+            public string GrainType { get; set; } = "";
+            public object State { get; set; }
+            public int ETag { get; set; }
         }
     }
 
@@ -124,7 +183,7 @@ namespace OrleansTests
         {
             IOptionsSnapshot<MinioGrainStorageOptions> optionsSnapshot = services.GetRequiredService<IOptionsSnapshot<MinioGrainStorageOptions>>();
             var options = optionsSnapshot.Get(name);
-            IBlobStorage storage = new MinioStorage(options.AccessKey, options.SecretKey, options.Endpoint, name);
+            IBlobStorage storage = new MinioStorage(options.AccessKey, options.SecretKey, options.Endpoint, "test-app");
             return ActivatorUtilities.CreateInstance<MinioGrainStorage>(services, name, options.Container, storage);
         }
     }

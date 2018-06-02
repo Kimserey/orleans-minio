@@ -7,10 +7,10 @@ namespace OrleansTests
 {
     public class MinioStorage : IBlobStorage
     {
-        private string _accessKey;
-        private string _secretKey;
-        private string _endpoint;
-        private string _containerPrefix;
+        private readonly string _accessKey;
+        private readonly string _secretKey;
+        private readonly string _endpoint;
+        private readonly string _containerPrefix;
 
         public MinioStorage(string accessKey, string secretKey, string endpoint, string containerPrefix)
         {
@@ -32,13 +32,17 @@ namespace OrleansTests
             _containerPrefix = containerPrefix;
         }
 
-        private (MinioClient client, string bucket, string objectName) GetStorage(string blobContainer, string prefix, string blobName)
+        private MinioClient CreateMinioClient() => new MinioClient(_endpoint, _accessKey, _secretKey);
+
+        private string AppendPrefix(string prefix, string value) => $"{prefix}-{value}";
+
+        private string AppendContainerPrefix(string container) => AppendPrefix(_containerPrefix, container);
+
+        private (MinioClient client, string bucket, string objectName) GetStorage(string blobContainer, string prefix, string blobName) => (CreateMinioClient(), AppendContainerPrefix(blobContainer), AppendPrefix(prefix, blobName));
+
+        public Task<bool> ContainerExits(string blobContainer)
         {
-            string appendPrefix(string p, string v) => $"{p}-{v}";
-            string appendBlobPrefix(string c) => appendPrefix(_containerPrefix, c);
-            string bucket = appendBlobPrefix(blobContainer);
-            string objectName = appendPrefix(prefix, blobName);
-            return (new MinioClient(_endpoint, _accessKey, _secretKey), bucket, objectName);
+            return CreateMinioClient().BucketExistsAsync(AppendContainerPrefix(blobContainer));
         }
 
         public async Task DeleteBlob(string blobContainer, string prefix, string blobName)
