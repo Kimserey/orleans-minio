@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrleansTests.Client
 {
-    [Route("bankAccount")]
+    [Route("account")]
     public class BankAccountController : Controller
     {
         private IGrainFactory _factory;
@@ -28,6 +28,13 @@ namespace OrleansTests.Client
         {
             var balance = await _factory.GetGrain<IBankAccount>(0).SetBalance(b);
             return Json(balance);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete()
+        {
+            await _factory.GetGrain<IBankAccount>(0).Clear();
+            return Ok();
         }
     }
 }

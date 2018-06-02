@@ -10,6 +10,11 @@ namespace OrleansTests.Grains
     [StorageProvider(ProviderName = "Minio")]
     public class BankAccount : Grain<BankAccountState>, IBankAccount
     {
+        public Task Clear()
+        {
+            return ClearStateAsync();
+        }
+
         public Task<double> GetBalance()
         {
             return Task.FromResult(State.Amount);
