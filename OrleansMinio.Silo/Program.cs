@@ -42,7 +42,12 @@ namespace OrleansMinio.Silo
             silo.StartAsync().Wait();
 
             Console.WriteLine("===> Silo running");
-            Console.ReadKey();
+            string input = "";
+
+            while (input != "exit")
+            {
+                input = Console.ReadLine();
+            }
         }
     }
 }
