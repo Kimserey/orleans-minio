@@ -54,7 +54,8 @@ namespace OrleansMinio.Storage
             stopwwatch.Restart();
 
             var client = CreateMinioClient();
-
+            
+            stopwwatch.Stop();
             _logger.LogDebug("Created Minio client: timems={0} container={0} blobName={1} blobPrefix={2}", stopwwatch.ElapsedMilliseconds, blobContainer, blobName, blobPrefix);
 
             return (client, AppendContainerPrefix(blobContainer), AppendPrefix(blobPrefix, blobName));
