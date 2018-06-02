@@ -187,7 +187,7 @@ namespace OrleansMinio.Storage
         {
             IOptionsSnapshot<MinioGrainStorageOptions> optionsSnapshot = services.GetRequiredService<IOptionsSnapshot<MinioGrainStorageOptions>>();
             var options = optionsSnapshot.Get(name);
-            IMinioStorage storage = new MinioStorage(options.AccessKey, options.SecretKey, options.Endpoint);
+            IMinioStorage storage = ActivatorUtilities.CreateInstance<MinioStorage>(services, options.AccessKey, options.SecretKey, options.Endpoint);
             return ActivatorUtilities.CreateInstance<MinioGrainStorage>(services, name, options.Container, storage);
         }
     }

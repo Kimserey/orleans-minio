@@ -1,4 +1,5 @@
-﻿using Minio;
+﻿using Microsoft.Extensions.Logging;
+using Minio;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -11,17 +12,9 @@ namespace OrleansMinio.Storage
         private readonly string _secretKey;
         private readonly string _endpoint;
         private readonly string _containerPrefix;
+        private readonly ILogger<MinioStorage> _logger;
 
-        public MinioStorage(string accessKey, string secretKey, string endpoint, string containerPrefix)
-            : this(accessKey, secretKey, endpoint)
-        {
-            if (string.IsNullOrWhiteSpace(containerPrefix))
-                throw new ArgumentException("Minio 'containerPrefix' is missing.");
-
-            _containerPrefix = containerPrefix;
-        }
-
-        public MinioStorage(string accessKey, string secretKey, string endpoint)
+        public MinioStorage(ILogger<MinioStorage> logger, string accessKey, string secretKey, string endpoint)
         {
             if (string.IsNullOrWhiteSpace(accessKey))
                 throw new ArgumentException("Minio 'accessKey' is missing.");
@@ -35,6 +28,16 @@ namespace OrleansMinio.Storage
             _accessKey = accessKey;
             _secretKey = secretKey;
             _endpoint = endpoint;
+            _logger = logger;
+        }
+
+        public MinioStorage(ILogger<MinioStorage> logger, string accessKey, string secretKey, string endpoint, string containerPrefix)
+            : this(logger, accessKey, secretKey, endpoint)
+        {
+            if (string.IsNullOrWhiteSpace(containerPrefix))
+                throw new ArgumentException("Minio 'containerPrefix' is missing.");
+
+            _containerPrefix = containerPrefix;
         }
 
         private MinioClient CreateMinioClient() => new MinioClient(_endpoint, _accessKey, _secretKey);
