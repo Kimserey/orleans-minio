@@ -5,8 +5,6 @@ class MyTaskSet(TaskSet):
     def saveGrain(self):
         self.client.post("/account/balance?b=20")
 
-class MyLocust(HttpLocust):
+class LoadTest(HttpLocust):
     task_set = MyTaskSet
-    min_wait = 1000
-    max_wait = 1000
     host = "http://localhost:5000"
