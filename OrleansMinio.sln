@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27703.2018
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrleansMinio", "OrleansMinio\OrleansMinio.csproj", "{477E5975-ED44-4780-943E-CE4B7A972C1D}"
 EndProject
@@ -12,6 +12,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrleansMinio.Silo", "OrleansMinio.Silo\OrleansMinio.Silo.csproj", "{5CD9A950-B642-4532-852E-7FDBF14CC2E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrleansMinio.Client", "OrleansMinio.Client\OrleansMinio.Client.csproj", "{2305B32E-D4C8-49CD-9430-47DA9E72A516}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Locust", "Locust", "{CA7D5168-B8F6-4DE8-8534-93F0C865FE14}"
+	ProjectSection(SolutionItems) = preProject
+		OrleansMinio.Locust\loadtest.py = OrleansMinio.Locust\loadtest.py
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
