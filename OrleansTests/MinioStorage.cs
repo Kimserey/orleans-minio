@@ -12,7 +12,16 @@ namespace OrleansTests
         private readonly string _endpoint;
         private readonly string _containerPrefix;
 
-        public MinioStorage(string accessKey, string secretKey, string endpoint, string containerPrefix)
+        public MinioStorage(string accessKey, string secretKey, string endpoint, string containerPrefix) 
+            : this(accessKey, secretKey, endpoint)
+        {
+            if (string.IsNullOrWhiteSpace(containerPrefix))
+                throw new ArgumentException("Minio 'containerPrefix' is missing.");
+
+            _containerPrefix = containerPrefix;
+        }
+
+        public MinioStorage(string accessKey, string secretKey, string endpoint)
         {
             if (string.IsNullOrWhiteSpace(accessKey))
                 throw new ArgumentException("Minio 'accessKey' is missing.");
@@ -23,20 +32,16 @@ namespace OrleansTests
             if (string.IsNullOrWhiteSpace(endpoint))
                 throw new ArgumentException("Minio 'endpoint' is missing.");
 
-            if (string.IsNullOrWhiteSpace(containerPrefix))
-                throw new ArgumentException("Minio 'containerPrefix' is missing.");
-
             _accessKey = accessKey;
             _secretKey = secretKey;
             _endpoint = endpoint;
-            _containerPrefix = containerPrefix;
         }
 
         private MinioClient CreateMinioClient() => new MinioClient(_endpoint, _accessKey, _secretKey);
 
         private string AppendPrefix(string prefix, string value) => $"{prefix}-{value}";
 
-        private string AppendContainerPrefix(string container) => AppendPrefix(_containerPrefix, container);
+        private string AppendContainerPrefix(string container) => string.IsNullOrEmpty(_containerPrefix) ? container : AppendPrefix(_containerPrefix, container);
 
         private (MinioClient client, string bucket, string objectName) GetStorage(string blobContainer, string prefix, string blobName) => (CreateMinioClient(), AppendContainerPrefix(blobContainer), AppendPrefix(prefix, blobName));
 
