@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Minio.Exceptions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Serialization;
@@ -14,19 +13,19 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OrleansTests
+namespace OrleansTests.Storage
 {
     public class MinioGrainStorage : IGrainStorage, ILifecycleParticipant<ISiloLifecycle>
     {
         private readonly string _name;
         private readonly string _container;
         private readonly ILogger<MinioGrainStorage> _logger;
-        private readonly IBlobStorage _storage;
+        private readonly IMinioStorage _storage;
         private readonly IGrainFactory _grainFactory;
         private readonly ITypeResolver _typeResolver;
         private JsonSerializerSettings _jsonSettings;
 
-        public MinioGrainStorage(string name, string container, IBlobStorage storage, ILogger<MinioGrainStorage> logger, IGrainFactory grainFactory, ITypeResolver typeResolver)
+        public MinioGrainStorage(string name, string container, IMinioStorage storage, ILogger<MinioGrainStorage> logger, IGrainFactory grainFactory, ITypeResolver typeResolver)
         {
             _name = name;
             _container = container;
@@ -188,7 +187,7 @@ namespace OrleansTests
         {
             IOptionsSnapshot<MinioGrainStorageOptions> optionsSnapshot = services.GetRequiredService<IOptionsSnapshot<MinioGrainStorageOptions>>();
             var options = optionsSnapshot.Get(name);
-            IBlobStorage storage = new MinioStorage(options.AccessKey, options.SecretKey, options.Endpoint);
+            IMinioStorage storage = new MinioStorage(options.AccessKey, options.SecretKey, options.Endpoint);
             return ActivatorUtilities.CreateInstance<MinioGrainStorage>(services, name, options.Container, storage);
         }
     }

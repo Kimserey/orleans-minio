@@ -3,9 +3,9 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace OrleansTests
+namespace OrleansTests.Storage
 {
-    public class MinioStorage : IBlobStorage
+    public class MinioStorage : IMinioStorage
     {
         private readonly string _accessKey;
         private readonly string _secretKey;
@@ -100,13 +100,13 @@ namespace OrleansTests
             return UploadBlob(blobContainer, blobKey.ToString(), blob, blobPrefix, contentType);
         }
 
-        public async Task<BlobStorageConnectionStatus> CheckConnection()
+        public async Task<MinioStorageConnectionStatus> CheckConnection()
         {
             try
             {
                 var client = new MinioClient(_endpoint, _accessKey, _secretKey);
                 var buckets = await client.ListBucketsAsync();
-                return new BlobStorageConnectionStatus
+                return new MinioStorageConnectionStatus
                 {
                     Success = true,
                     Message = $"{buckets.Buckets.Count} bucket(s) found in Minio Storage."
@@ -114,7 +114,7 @@ namespace OrleansTests
             }
             catch (Exception ex)
             {
-                return new BlobStorageConnectionStatus
+                return new MinioStorageConnectionStatus
                 {
                     Success = false,
                     Message = "Minio Storage check failed. " + ex.Message

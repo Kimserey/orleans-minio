@@ -4,9 +4,10 @@ using Orleans;
 using Orleans.Hosting;
 using Orleans.Runtime;
 using Orleans.Storage;
+using OrleansTests.Storage;
 using System;
 
-namespace OrleansTests
+namespace OrleansTests.Hosting
 {
     public static class MinioSiloBuilderExtensions
     {

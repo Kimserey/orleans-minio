@@ -1,6 +1,6 @@
 ﻿namespace OrleansTests
 {
-    public class BlobStorageConnectionStatus
+    public class MinioStorageConnectionStatus
     {
         public bool Success { get; set; }
         public string Message { get; set; }

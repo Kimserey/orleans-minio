@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Hosting;
+using OrleansTests.Hosting;
 using OrleansTests.Grains;
+using OrleansTests.Storage;
 using System;
 
 namespace OrleansTests.Silo

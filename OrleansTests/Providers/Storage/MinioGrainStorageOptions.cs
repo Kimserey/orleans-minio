@@ -1,4 +1,4 @@
-﻿namespace OrleansTests
+﻿namespace OrleansTests.Storage
 {
     public class MinioGrainStorageOptions
     {
