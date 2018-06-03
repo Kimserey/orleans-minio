@@ -52,7 +52,7 @@ namespace OrleansMinio.Storage
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error clearing: GrainType={0} Grainid={1} ETag={2} BlobName={3} in Container={4} Exception={5}", 
+                _logger.LogError(ex, "Error clearing: GrainType={0} Grainid={1} ETag={2} BlobName={3} in Container={4} Exception={5}",
                     grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
 
                 throw;
@@ -75,7 +75,7 @@ namespace OrleansMinio.Storage
                     using (var stream = new MemoryStream())
                     {
                         await blob.CopyToAsync(stream);
-                        record  = ConvertFromStorageFormat(stream.ToArray());
+                        record = ConvertFromStorageFormat(stream.ToArray());
                     }
                 }
                 catch (BucketNotFoundException ex)
@@ -115,9 +115,8 @@ namespace OrleansMinio.Storage
             int newETag = string.IsNullOrEmpty(grainState.ETag) ? 0 : Int32.Parse(grainState.ETag) + 1;
             try
             {
-                if (_logger.IsEnabled(LogLevel.Trace))
-                    _logger.LogTrace("Writing: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}", 
-                        grainType, grainReference, grainState.ETag, blobName, _container);
+                _logger.LogTrace("Writing: GrainType={0} Grainid={1} ETag={2} to BlobName={3} in Container={4}",
+                    grainType, grainReference, grainState.ETag, blobName, _container);
 
 
                 var record = new GrainStateRecord
@@ -138,7 +137,7 @@ namespace OrleansMinio.Storage
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error writing: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}", 
+                _logger.LogError(ex, "Error writing: GrainType={0} Grainid={1} ETag={2} from BlobName={3} in Container={4} Exception={5}",
                     grainType, grainReference, grainState.ETag, blobName, _container, ex.Message);
 
                 throw;

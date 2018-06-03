@@ -6,6 +6,7 @@ using OrleansMinio.Hosting;
 using OrleansMinio.Grains;
 using OrleansMinio.Storage;
 using System;
+using Microsoft.Extensions.Logging.Console;
 
 namespace OrleansMinio.Silo
 {
@@ -15,7 +16,6 @@ namespace OrleansMinio.Silo
         {
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<Program>()
-                .AddJsonFile("appsettings.json")
                 .Build();
 
             var silo = new SiloHostBuilder()
@@ -33,7 +33,8 @@ namespace OrleansMinio.Silo
                     x.AddApplicationPart(typeof(BankAccount).Assembly).WithReferences();
                 })
                 .ConfigureLogging(x => x
-                    .AddConfiguration(config.GetSection("Logging"))
+                    .AddFilter("System", LogLevel.Information)
+                    .AddFilter<ConsoleLoggerProvider>("OrleansMinio.Storage", LogLevel.Trace)
                     .AddConsole()
                     .AddDebug()
                 )
