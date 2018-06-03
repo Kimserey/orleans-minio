@@ -162,10 +162,14 @@ namespace OrleansMinio.Storage
             return record;
         }
 
-        private Task Init(CancellationToken ct)
+        private async Task Init(CancellationToken ct)
         {
             _jsonSettings = OrleansJsonSerializer.UpdateSerializerSettings(OrleansJsonSerializer.GetDefaultSerializerSettings(_typeResolver, _grainFactory), true, true, null);
-            return Task.CompletedTask;
+
+            if (!await _storage.ContainerExits(_container))
+            {
+                await _storage.CreateContainerAsync(_container);
+            }
         }
 
         public void Participate(ISiloLifecycle lifecycle)

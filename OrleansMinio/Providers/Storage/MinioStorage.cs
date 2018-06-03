@@ -66,6 +66,11 @@ namespace OrleansMinio.Storage
             return CreateMinioClient().BucketExistsAsync(AppendContainerPrefix(blobContainer));
         }
 
+        public Task CreateContainerAsync(string blobContainer)
+        {
+            return CreateMinioClient().MakeBucketAsync(blobContainer);
+        }
+
         public async Task DeleteBlob(string blobContainer, string blobName, string blobPrefix = null)
         {
             var (client, bucket, objectName) =
@@ -108,11 +113,6 @@ namespace OrleansMinio.Storage
 
             _logger.LogTrace("Writing blob: container={0} blobName={1} blobPrefix={2}", blobContainer, blobName, blobPrefix);
             stopwwatch.Restart();
-
-            if (!await client.BucketExistsAsync(container))
-            {
-                await client.MakeBucketAsync(container);
-            }
 
             await client.PutObjectAsync(container, name, blob, blob.Length, contentType: contentType);
             stopwwatch.Stop();

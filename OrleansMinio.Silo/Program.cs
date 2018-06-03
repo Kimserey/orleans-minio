@@ -34,7 +34,7 @@ namespace OrleansMinio.Silo
                 })
                 .ConfigureLogging(x => x
                     .AddFilter("System", LogLevel.Information)
-                    .AddFilter<ConsoleLoggerProvider>("OrleansMinio.Storage", LogLevel.Trace)
+                    .AddFilter<ConsoleLoggerProvider>("OrleansMinio.Storage.MinioStorage", LogLevel.Trace)
                     .AddConsole()
                     .AddDebug()
                 )
