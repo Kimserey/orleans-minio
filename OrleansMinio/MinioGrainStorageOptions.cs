@@ -1,4 +1,4 @@
-﻿namespace OrleansMinio.Storage
+﻿namespace OrleansMinio
 {
     public class MinioGrainStorageOptions
     {

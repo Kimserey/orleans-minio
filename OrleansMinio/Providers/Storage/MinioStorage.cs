@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OrleansMinio.Storage
 {
-    public class MinioStorage : IMinioStorage
+    internal class MinioStorage : IMinioStorage
     {
         private readonly string _accessKey;
         private readonly string _secretKey;
@@ -117,28 +117,6 @@ namespace OrleansMinio.Storage
             await client.PutObjectAsync(container, name, blob, blob.Length, contentType: contentType);
             stopwwatch.Stop();
             _logger.LogTrace("Wrote blob: timems={0} container={0} blobName={1} blobPrefix={2}", stopwwatch.ElapsedMilliseconds, blobContainer, blobName, blobPrefix);
-        }
-
-        public async Task<MinioStorageConnectionStatus> CheckConnection()
-        {
-            try
-            {
-                var client = new MinioClient(_endpoint, _accessKey, _secretKey);
-                var buckets = await client.ListBucketsAsync();
-                return new MinioStorageConnectionStatus
-                {
-                    Success = true,
-                    Message = $"{buckets.Buckets.Count} bucket(s) found in Minio Storage."
-                };
-            }
-            catch (Exception ex)
-            {
-                return new MinioStorageConnectionStatus
-                {
-                    Success = false,
-                    Message = "Minio Storage check failed. " + ex.Message
-                };
-            }
         }
     }
 }

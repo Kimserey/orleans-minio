@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace OrleansMinio.Storage
 {
-    public class MinioGrainStorage : IGrainStorage, ILifecycleParticipant<ISiloLifecycle>
+    internal class MinioGrainStorage : IGrainStorage, ILifecycleParticipant<ISiloLifecycle>
     {
         private readonly string _name;
         private readonly string _container;
@@ -184,9 +184,9 @@ namespace OrleansMinio.Storage
         }
     }
 
-    public static class MinioGrainStorageFactory
+    internal static class MinioGrainStorageFactory
     {
-        public static IGrainStorage Create(IServiceProvider services, string name)
+        internal static IGrainStorage Create(IServiceProvider services, string name)
         {
             IOptionsSnapshot<MinioGrainStorageOptions> optionsSnapshot = services.GetRequiredService<IOptionsSnapshot<MinioGrainStorageOptions>>();
             var options = optionsSnapshot.Get(name);

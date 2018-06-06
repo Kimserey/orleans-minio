@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace OrleansMinio.Storage
 {
-    public static class MinioStorageExtensions
+    internal static class MinioStorageExtensions
     {
         public static Task DeleteBlob(this IMinioStorage storage, string blobContainer, Guid blobKey, string blobPrefix = null)
         {
