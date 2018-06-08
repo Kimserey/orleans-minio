@@ -164,7 +164,7 @@ namespace OrleansMinio.Storage
 
         private async Task Init(CancellationToken ct)
         {
-            _jsonSettings = OrleansJsonSerializer.UpdateSerializerSettings(OrleansJsonSerializer.GetDefaultSerializerSettings(_typeResolver, _grainFactory), true, true, null);
+            _jsonSettings = OrleansJsonSerializer.UpdateSerializerSettings(OrleansJsonSerializer.GetDefaultSerializerSettings(_typeResolver, _grainFactory), false, false, null);
 
             if (!await _storage.ContainerExits(_container))
             {

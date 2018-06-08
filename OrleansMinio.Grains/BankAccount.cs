@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace OrleansMinio.Grains
 {
     [StatelessWorker]
-    [StorageProvider(ProviderName = "Minio")]
+    [StorageProvider(ProviderName = "File")]
     public class BankAccount : Grain<BankAccountState>, IBankAccount
     {
         public Task Clear()

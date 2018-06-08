@@ -20,16 +20,19 @@ namespace OrleansMinio.Silo
 
             var silo = new SiloHostBuilder()
                 .UseLocalhostClustering()
+                .AddFileGrainStorage("File", opts =>
+                {
+                    opts.RootDirectory = "C:/TestFiles";
+                })
                 .AddMinioGrainStorage("Minio", opts =>
                 {
                     opts.AccessKey = config["MINIO_ACCESS_KEY"];
                     opts.SecretKey = config["MINIO_SECRET_KEY"];
                     opts.Endpoint = "localhost:9000";
-                    opts.Container = "ek-grain-state";
+                    opts.Container = "example-grain-state";
                 })
                 .ConfigureApplicationParts(x =>
                 {
-                    x.AddFrameworkPart(typeof(MinioGrainStorage).Assembly);
                     x.AddApplicationPart(typeof(BankAccount).Assembly).WithReferences();
                 })
                 .ConfigureLogging(x => x
