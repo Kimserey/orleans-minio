@@ -9,51 +9,67 @@ using Newtonsoft.Json;
 using System.IO;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
-using Orleans.Hosting;
+using Orleans.Configuration.Overrides;
+using Orleans.Configuration;
 
 namespace OrleansMinio.Silo
 {
     public class FileGrainStorage : IGrainStorage, ILifecycleParticipant<ISiloLifecycle>
     {
         private readonly string _storageName;
-        private readonly string _rootDirectory;
+        private readonly FileGrainStorageOptions _options;
+        private readonly ClusterOptions _clusterOptions;
         private readonly IGrainFactory _grainFactory;
         private readonly ITypeResolver _typeResolver;
         private JsonSerializerSettings _jsonSettings;
 
-        public FileGrainStorage(string storageName, string rootDirectory, IGrainFactory grainFactory, ITypeResolver typeResolver)
+        public FileGrainStorage(string storageName, FileGrainStorageOptions options, IOptions<ClusterOptions> clusterOptions, IGrainFactory grainFactory, ITypeResolver typeResolver)
         {
             _storageName = storageName;
-            _rootDirectory = rootDirectory;
+            _options = options;
+            _clusterOptions = clusterOptions.Value;
             _grainFactory = grainFactory;
             _typeResolver = typeResolver;
         }
 
+        private string GetKeyString(string grainType, GrainReference grainReference)
+        {
+            return $"{_clusterOptions.ServiceId}_{grainReference.ToKeyString()}.{grainType}";
+        }
+
         public Task ClearStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
         {
-            var fName = grainReference.ToKeyString() + "." + grainType;
-            var path = Path.Combine(_rootDirectory, fName);
+            var fName = GetKeyString(grainType, grainReference);
+            var path = Path.Combine(_options.RootDirectory, fName);
 
             var fileInfo = new FileInfo(path);
             if (fileInfo.Exists)
+            {
+                grainState.ETag = null;
                 fileInfo.Delete();
+                grainState.State = Activator.CreateInstance(grainState.State.GetType());
+            }
 
             return Task.CompletedTask;
         }
 
         public async Task ReadStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
         {
-            var fName = grainReference.ToKeyString() + "." + grainType;
-            var path = Path.Combine(_rootDirectory, fName);
+            var fName = GetKeyString(grainType, grainReference);
+            var path = Path.Combine(_options.RootDirectory, fName);
 
             var fileInfo = new FileInfo(path);
             if (!fileInfo.Exists)
+            {
+                grainState.ETag = null;
+                grainState.State = Activator.CreateInstance(grainState.State.GetType());
                 return;
+            }
 
             using (var stream = fileInfo.OpenText())
             {
                 var storedData = await stream.ReadToEndAsync();
-                grainState.State = JsonConvert.DeserializeObject(storedData, grainState.State.GetType(), _jsonSettings);
+                grainState.State = JsonConvert.DeserializeObject(storedData, _jsonSettings);
             }
         }
 
@@ -61,8 +77,8 @@ namespace OrleansMinio.Silo
         {
             var storedData = JsonConvert.SerializeObject(grainState.State, _jsonSettings);
 
-            var fName = grainReference.ToKeyString() + "." + grainType;
-            var path = Path.Combine(_rootDirectory, fName);
+            var fName = GetKeyString(grainType, grainReference);
+            var path = Path.Combine(_options.RootDirectory, fName);
 
             var fileInfo = new FileInfo(path);
 
@@ -81,7 +97,7 @@ namespace OrleansMinio.Silo
         {
             _jsonSettings = OrleansJsonSerializer.UpdateSerializerSettings(OrleansJsonSerializer.GetDefaultSerializerSettings(_typeResolver, _grainFactory), false, false, null);
 
-            var directory = new System.IO.DirectoryInfo(_rootDirectory);
+            var directory = new DirectoryInfo(_options.RootDirectory);
             if (!directory.Exists)
                 directory.Create();
 
@@ -99,24 +115,7 @@ namespace OrleansMinio.Silo
         internal static IGrainStorage Create(IServiceProvider services, string name)
         {
             IOptionsSnapshot<FileGrainStorageOptions> optionsSnapshot = services.GetRequiredService<IOptionsSnapshot<FileGrainStorageOptions>>();
-            var options = optionsSnapshot.Get(name);
-            return ActivatorUtilities.CreateInstance<FileGrainStorage>(services, name, options.RootDirectory);
-        }
-    }
-
-    public static class FileSiloBuilderExtensions
-    {
-        public static ISiloHostBuilder AddFileGrainStorage(this ISiloHostBuilder builder, string providerName, Action<FileGrainStorageOptions> options)
-        {
-            return builder.ConfigureServices(services => services.AddFileGrainStorage(providerName, ob => ob.Configure(options)));
-        }
-
-        public static IServiceCollection AddFileGrainStorage(this IServiceCollection services, string providerName, Action<OptionsBuilder<FileGrainStorageOptions>> options)
-        {
-            options?.Invoke(services.AddOptions<FileGrainStorageOptions>(providerName));
-            return services
-                .AddSingletonNamedService(providerName, FileGrainStorageFactory.Create)
-                .AddSingletonNamedService(providerName, (s, n) => (ILifecycleParticipant<ISiloLifecycle>)s.GetRequiredServiceByName<IGrainStorage>(n));
+            return ActivatorUtilities.CreateInstance<FileGrainStorage>(services, name, optionsSnapshot.Get(name), services.GetProviderClusterOptions(name));
         }
     }
 }

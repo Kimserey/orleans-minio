@@ -7,6 +7,7 @@ using OrleansMinio.Grains;
 using OrleansMinio.Storage;
 using System;
 using Microsoft.Extensions.Logging.Console;
+using Orleans.Configuration;
 
 namespace OrleansMinio.Silo
 {
@@ -20,17 +21,21 @@ namespace OrleansMinio.Silo
 
             var silo = new SiloHostBuilder()
                 .UseLocalhostClustering()
+                .Configure<ClusterOptions>(opts => {
+                    opts.ClusterId = "ClusterA";
+                    opts.ServiceId = "ServiceA";
+                })
                 .AddFileGrainStorage("File", opts =>
                 {
                     opts.RootDirectory = "C:/TestFiles";
                 })
-                .AddMinioGrainStorage("Minio", opts =>
-                {
-                    opts.AccessKey = config["MINIO_ACCESS_KEY"];
-                    opts.SecretKey = config["MINIO_SECRET_KEY"];
-                    opts.Endpoint = "localhost:9000";
-                    opts.Container = "example-grain-state";
-                })
+                //.AddMinioGrainStorage("Minio", opts =>
+                //{
+                //    opts.AccessKey = config["MINIO_ACCESS_KEY"];
+                //    opts.SecretKey = config["MINIO_SECRET_KEY"];
+                //    opts.Endpoint = "localhost:9000";
+                //    opts.Container = "example-grain-state";
+                //})
                 .ConfigureApplicationParts(x =>
                 {
                     x.AddApplicationPart(typeof(BankAccount).Assembly).WithReferences();
