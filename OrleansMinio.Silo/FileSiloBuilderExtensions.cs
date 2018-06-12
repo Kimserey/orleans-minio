@@ -12,12 +12,12 @@ namespace OrleansMinio.Silo
     {
         public static ISiloHostBuilder AddFileGrainStorage(this ISiloHostBuilder builder, string providerName, Action<FileGrainStorageOptions> options)
         {
-            return builder.ConfigureServices(services => services.AddFileGrainStorage(providerName, ob => ob.Configure(options)));
+            return builder.ConfigureServices(services => services.AddFileGrainStorage(providerName, options));
         }
 
-        public static IServiceCollection AddFileGrainStorage(this IServiceCollection services, string providerName, Action<OptionsBuilder<FileGrainStorageOptions>> options)
+        public static IServiceCollection AddFileGrainStorage(this IServiceCollection services, string providerName, Action<FileGrainStorageOptions> options)
         {
-            options?.Invoke(services.AddOptions<FileGrainStorageOptions>(providerName));
+            services.AddOptions<FileGrainStorageOptions>(providerName).Configure(options);
             return services
                 .AddSingletonNamedService(providerName, FileGrainStorageFactory.Create)
                 .AddSingletonNamedService(providerName, (s, n) => (ILifecycleParticipant<ISiloLifecycle>)s.GetRequiredServiceByName<IGrainStorage>(n));

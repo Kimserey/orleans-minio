@@ -21,10 +21,10 @@ namespace OrleansMinio.Silo
 
             var silo = new SiloHostBuilder()
                 .UseLocalhostClustering()
-                .Configure<ClusterOptions>(opts => {
-                    opts.ClusterId = "ClusterA";
-                    opts.ServiceId = "ServiceA";
-                })
+                //.Configure<ClusterOptions>(opts => {
+                //    opts.ClusterId = "ClusterA";
+                //    opts.ServiceId = "ServiceA";
+                //})
                 .AddFileGrainStorage("File", opts =>
                 {
                     opts.RootDirectory = "C:/TestFiles";

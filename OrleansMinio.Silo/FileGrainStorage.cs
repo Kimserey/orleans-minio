@@ -34,7 +34,7 @@ namespace OrleansMinio.Silo
 
         private string GetKeyString(string grainType, GrainReference grainReference)
         {
-            return $"{_clusterOptions.ServiceId}_{grainReference.ToKeyString()}.{grainType}";
+            return $"{_clusterOptions.ServiceId}.{grainReference.ToKeyString()}.{grainType}";
         }
 
         public Task ClearStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
@@ -46,8 +46,8 @@ namespace OrleansMinio.Silo
             if (fileInfo.Exists)
             {
                 grainState.ETag = null;
-                fileInfo.Delete();
                 grainState.State = Activator.CreateInstance(grainState.State.GetType());
+                fileInfo.Delete();
             }
 
             return Task.CompletedTask;
@@ -61,7 +61,6 @@ namespace OrleansMinio.Silo
             var fileInfo = new FileInfo(path);
             if (!fileInfo.Exists)
             {
-                grainState.ETag = null;
                 grainState.State = Activator.CreateInstance(grainState.State.GetType());
                 return;
             }
