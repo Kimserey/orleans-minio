@@ -47,7 +47,7 @@ namespace OrleansMinio.Silo
             {
                 if (fileInfo.LastWriteTimeUtc.ToString() != grainState.ETag)
                 {
-                    throw new InconsistentStateException($"Version conflict (WriteState): ServiceId={_clusterOptions.ServiceId} ProviderName={_storageName} GrainType={grainType} GrainReference={grainReference.ToKeyString()}.");
+                    throw new InconsistentStateException($"Version conflict (ClearState): ServiceId={_clusterOptions.ServiceId} ProviderName={_storageName} GrainType={grainType} GrainReference={grainReference.ToKeyString()}.");
                 }
 
                 grainState.ETag = null;
