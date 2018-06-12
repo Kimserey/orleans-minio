@@ -45,6 +45,11 @@ namespace OrleansMinio.Silo
             var fileInfo = new FileInfo(path);
             if (fileInfo.Exists)
             {
+                if (fileInfo.LastWriteTimeUtc.ToString() != grainState.ETag)
+                {
+                    throw new InconsistentStateException($"Version conflict (WriteState): ServiceId={_clusterOptions.ServiceId} ProviderName={_storageName} GrainType={grainType} GrainReference={grainReference.ToKeyString()}.");
+                }
+
                 grainState.ETag = null;
                 grainState.State = Activator.CreateInstance(grainState.State.GetType());
                 fileInfo.Delete();
@@ -59,6 +64,7 @@ namespace OrleansMinio.Silo
             var path = Path.Combine(_options.RootDirectory, fName);
 
             var fileInfo = new FileInfo(path);
+
             if (!fileInfo.Exists)
             {
                 grainState.State = Activator.CreateInstance(grainState.State.GetType());
@@ -70,6 +76,8 @@ namespace OrleansMinio.Silo
                 var storedData = await stream.ReadToEndAsync();
                 grainState.State = JsonConvert.DeserializeObject(storedData, _jsonSettings);
             }
+
+            grainState.ETag = fileInfo.LastWriteTimeUtc.ToString();
         }
 
         public async Task WriteStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
@@ -81,10 +89,18 @@ namespace OrleansMinio.Silo
 
             var fileInfo = new FileInfo(path);
 
+            if (fileInfo.Exists && fileInfo.LastWriteTimeUtc.ToString() != grainState.ETag)
+            {
+                throw new InconsistentStateException($"Version conflict (WriteState): ServiceId={_clusterOptions.ServiceId} ProviderName={_storageName} GrainType={grainType} GrainReference={grainReference.ToKeyString()}.");
+            }
+
             using (var stream = new StreamWriter(fileInfo.Open(FileMode.Create, FileAccess.Write)))
             {
                 await stream.WriteAsync(storedData);
             }
+
+            fileInfo.Refresh();
+            grainState.ETag = fileInfo.LastWriteTimeUtc.ToString();
         }
 
         public void Participate(ISiloLifecycle lifecycle)
