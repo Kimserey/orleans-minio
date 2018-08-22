@@ -13,21 +13,6 @@ namespace OrleansMinio.Client
         {
             services.AddMvc();
 
-            services.Configure<TestOptions>(opt =>
-            {
-                opt.ValueOne = "1";
-                opt.ValueTwo = "2";
-            });
-
-            services.PostConfigure<TestOptions>("test", opt =>
-            {
-                opt.ValueOne = "[POST] " + opt.ValueOne + "|" + opt.ValueTwo;
-            });
-
-            services.AddOptions<TestOptions>("test")
-                .Configure(test => test.ValueOne = "[test] one")
-                .Configure(test => test.ValueOne = "[test] two");
-
             services.AddSingleton<IGrainFactory>(sp =>
             {
                 var client =
