@@ -15,27 +15,17 @@ namespace OrleansMinio.Silo
     {
         static void Main(string[] args)
         {
-            var config = new ConfigurationBuilder()
-                .AddUserSecrets<Program>()
-                .Build();
-
             var silo = new SiloHostBuilder()
                 .UseLocalhostClustering()
-                //.Configure<ClusterOptions>(opts => {
-                //    opts.ClusterId = "ClusterA";
-                //    opts.ServiceId = "ServiceA";
-                //})
-                .AddFileGrainStorage("File", opts =>
+                .AddMinioGrainStorage("Minio", opts =>
                 {
-                    opts.RootDirectory = "C:/TestFiles";
+                    // Example of settings
+                    // minio.exe -C C:\Tools\example server C:\Tools\example
+                    opts.AccessKey = "CCZ9CNVPJ1YU5GU4B87J";
+                    opts.SecretKey = "jqnrRHkgbAWkf2IrqYIbMo8WJ+NBSVv3WQ1z8oRC";
+                    opts.Endpoint = "localhost:9000";
+                    opts.Container = "example-grain-state";
                 })
-                //.AddMinioGrainStorage("Minio", opts =>
-                //{
-                //    opts.AccessKey = config["MINIO_ACCESS_KEY"];
-                //    opts.SecretKey = config["MINIO_SECRET_KEY"];
-                //    opts.Endpoint = "localhost:9000";
-                //    opts.Container = "example-grain-state";
-                //})
                 .ConfigureApplicationParts(x =>
                 {
                     x.AddApplicationPart(typeof(BankAccount).Assembly).WithReferences();

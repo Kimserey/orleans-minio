@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using OrleansMinio.GrainInterfaces;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace OrleansMinio.Client
 {
@@ -28,6 +29,8 @@ namespace OrleansMinio.Client
 
                 return client;
             });
+
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info { Title = "My Api", Version = "v1" }));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -36,6 +39,8 @@ namespace OrleansMinio.Client
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseSwagger().UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My Api v1"));
 
             app.UseMvcWithDefaultRoute();
         }
