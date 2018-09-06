@@ -1,5 +1,11 @@
 # Minio Orleans Grain Storage
 
+-----------------------------
+
+### :warning: Orleans Minio grain storage has moved to [OrleansContrib/Orleans.Persistence.Minio](https://github.com/OrleansContrib/Orleans.Persistence.Minio)
+
+-----------------------------
+
 Minio implementation for Orleans Grain Storage
 
 ```c#
